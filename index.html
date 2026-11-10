@@ -1,0 +1,176 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Point Info</title>
+<style>
+:root{--bg:#f3f1ec;--card:#fffdf8;--ink:#1f2a24;--mute:#6b736d;--line:#ddd9cf;--acc:#1e4f8f;--acc2:#e6eef8;--warn:#b3402a;--ok:#1e6b4f;
+box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#12171c;--card:#1b2229;--ink:#ecf0f4;--mute:#98a3ad;--line:#2b3640;--acc:#6aa7ee;--acc2:#1d2c3d;--warn:#ef8a73;--ok:#4fc08f}}
+:root[data-theme="dark"]{--bg:#12171c;--card:#1b2229;--ink:#ecf0f4;--mute:#98a3ad;--line:#2b3640;--acc:#6aa7ee;--acc2:#1d2c3d;--warn:#ef8a73;--ok:#4fc08f}
+*{box-sizing:border-box}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}
+body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.45 Georgia,"Times New Roman",serif}
+main{max-width:560px;margin:0 auto;padding:16px 16px 70px}
+h1{font-size:26px;margin:8px 0 2px}
+.sub{color:var(--mute);font:14px system-ui,sans-serif;margin:0 0 12px}
+.tabs{display:flex;gap:6px;margin-bottom:14px}.tabs button{flex:1;background:var(--acc2);color:var(--acc);border:1px solid var(--line)}
+.tabs button.on{background:var(--acc);color:#fff}
+.box{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:12px;margin-bottom:14px}
+label,small{font:13px system-ui,sans-serif;color:var(--mute)}
+label{display:block;margin:0 0 4px}
+input,textarea{width:100%;font:17px Georgia,serif;padding:10px;border:1px solid var(--line);border-radius:8px;background:var(--bg);color:var(--ink);margin-bottom:8px}
+input[type=checkbox]{width:22px;height:22px;margin:0;flex:none}
+textarea{resize:vertical}
+button{font:600 15px system-ui,sans-serif;border:0;border-radius:8px;padding:12px 14px;background:var(--acc);color:#fff;cursor:pointer}
+button.alt{background:var(--acc2);color:var(--acc);border:1px solid var(--line)}
+button.sm{padding:6px 10px;font-size:13px}
+button:focus-visible,input:focus-visible,textarea:focus-visible{outline:3px solid var(--acc);outline-offset:2px}
+.btns{display:flex;gap:8px;flex-wrap:wrap}.btns button{flex:1}
+.grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin:8px 0}
+.wide{width:100%}
+.hd{display:flex;justify-content:space-between;align-items:center;margin-bottom:6px}
+.rw{display:flex;align-items:center;gap:10px;padding:8px 0;border-bottom:1px solid var(--line);margin:0;color:var(--ink);font:16px Georgia,serif}
+.rw span{flex:1;min-width:0;overflow-wrap:anywhere}
+.hint{font:13px system-ui,sans-serif;color:var(--mute);margin:8px 0 0}
+.empty{color:var(--mute);text-align:center;padding:18px 0;font-style:italic}
+#prev{display:flex;align-items:center;gap:10px;margin-top:10px}#prev img{height:60px;border-radius:6px}
+.q{display:flex;align-items:center;gap:8px;padding:8px 0;border-bottom:1px solid var(--line)}.q span{flex:1}
+.ok{color:var(--ok);font-weight:bold}
+.h{padding:12px 0;border-bottom:1px solid var(--line)}
+.h p{margin:4px 0;overflow-wrap:anywhere;white-space:pre-wrap}
+.chip{display:inline-block;font:12px system-ui,sans-serif;background:var(--acc2);color:var(--acc);border-radius:10px;padding:2px 8px;margin:2px 4px 2px 0}
+.ov{position:fixed;inset:0;z-index:9;background:rgba(0,0,0,.9);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:14px;padding:16px}.ov img{max-width:100%;max-height:75%;border-radius:8px}.ov .btns{width:100%;max-width:360px}
+#msg{position:fixed;left:50%;bottom:calc(20px + env(safe-area-inset-bottom,0px));transform:translateX(-50%);background:var(--ink);color:var(--bg);padding:10px 16px;border-radius:20px;font:14px system-ui,sans-serif;opacity:0;pointer-events:none;transition:opacity .2s;z-index:10;max-width:90%;text-align:center}
+#msg.on{opacity:1}
+section{display:none}section.on{display:block}
+</style>
+</head>
+<body>
+<main>
+<h1>Point Info</h1>
+<p class="sub">Un message, une photo, toute ton équipe. Tout est gardé sur cet appareil.</p>
+<div class="tabs"><button data-t="send" class="on">Envoyer</button><button data-t="team">Équipe</button><button data-t="hist">Historique</button></div>
+
+<section id="s-send" class="on">
+<div class="box">
+<label for="txt">Message</label>
+<textarea id="txt" rows="5" placeholder="Écris ou dicte ton information…"></textarea>
+<div class="btns"><button class="alt" id="cam" type="button">📷 Photo</button><button class="alt" id="clr" type="button">Nouveau</button></div>
+<input type="file" id="pic" accept="image/*" hidden>
+<div id="prev"></div>
+</div>
+<div class="box">
+<div class="hd"><b>Destinataires</b><button class="alt sm" id="all" type="button">Tout cocher</button></div>
+<div id="rcpt"></div>
+</div>
+<div class="box">
+<b>Envoyer par</b>
+<div class="grid"><button id="bwa" type="button">WhatsApp</button><button id="bsms" type="button">SMS</button><button id="bml" type="button">Mail</button><button id="btm" type="button">Teams</button></div>
+<button class="alt wide" id="bsh" type="button">Partager (photo, autres apps)</button>
+<div id="wq"></div>
+<p class="hint">SMS, Mail et Teams partent en un seul message pour tous. WhatsApp : un appui par personne. Avec une photo, utilise Partager et choisis l’app dans la liste.</p>
+</div>
+</section>
+
+<section id="s-team">
+<div class="box">
+<label for="cn">Nom</label><input id="cn" placeholder="Ahmed">
+<label for="cp">Téléphone (WhatsApp / SMS)</label><input id="cp" inputmode="tel" placeholder="98 123 456">
+<label for="ce">Email (Mail / Teams)</label><input id="ce" type="email" inputmode="email" placeholder="ahmed@societe.com">
+<button class="wide" id="ca" type="button">Ajouter à l’équipe</button>
+</div>
+<div class="box">
+<label for="bulk">Coller une liste (une personne par ligne : nom, téléphone, email)</label>
+<textarea id="bulk" rows="4" placeholder="Ahmed, 98123456, ahmed@societe.com"></textarea>
+<button class="alt wide" id="bi" type="button">Importer la liste</button>
+</div>
+<div id="clist"></div>
+</section>
+
+<section id="s-hist">
+<div id="hlist"></div>
+<div class="box"><b>Sauvegarde</b>
+<div class="btns" style="margin-top:10px"><button class="alt" id="exJ" type="button">Sauvegarde (.json)</button><button class="alt" id="imp" type="button">Restaurer</button></div>
+<input type="file" id="file" accept=".json" hidden>
+<p class="hint">Fais une sauvegarde chaque semaine : elle garde l’équipe, l’historique et les photos.</p></div>
+</section>
+</main>
+<div id="msg" role="status"></div>
+
+<script>
+const $=id=>document.getElementById(id);
+const L=(k,d)=>{try{return JSON.parse(localStorage.getItem(k))||d}catch(e){return d}};
+let C=L('pi_c',[]),H=L('pi_h',[]),sel=new Set(L('pi_sel',[])),pend=null,cur=null,done={};
+const esc=s=>String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+function toast(t){const m=$('msg');m.textContent=t;m.classList.add('on');setTimeout(()=>m.classList.remove('on'),2600)}
+function S(){try{localStorage.setItem('pi_c',JSON.stringify(C));localStorage.setItem('pi_h',JSON.stringify(H));localStorage.setItem('pi_sel',JSON.stringify([...sel]))}catch(e){toast('Sauvegarde impossible : fais un export')}}
+/* photos (IndexedDB) */
+const dbp=new Promise(res=>{try{const q=indexedDB.open('pointinfo_photos',1);q.onupgradeneeded=()=>q.result.createObjectStore('p');q.onsuccess=()=>res(q.result);q.onerror=()=>res(null)}catch(e){res(null)}});
+async function idb(mode,fn){const d=await dbp;if(!d)return null;return new Promise(res=>{try{const t=d.transaction('p',mode);const r=fn(t.objectStore('p'));t.oncomplete=()=>res(r?r.result:null);t.onerror=()=>res(null)}catch(e){res(null)}})}
+const putPic=(id,v)=>idb('readwrite',s=>s.put(v,id));
+const getPic=id=>idb('readonly',s=>s.get(id));
+const delPic=id=>idb('readwrite',s=>s.delete(id));
+function shrink(file){return new Promise((res,rej)=>{const im=new Image(),u=URL.createObjectURL(file);im.onload=()=>{const k=Math.min(1,1200/Math.max(im.width,im.height)),c=document.createElement('canvas');c.width=Math.round(im.width*k);c.height=Math.round(im.height*k);c.getContext('2d').drawImage(im,0,0,c.width,c.height);URL.revokeObjectURL(u);res(c.toDataURL('image/jpeg',0.7))};im.onerror=()=>rej();im.src=u})}
+function toFile(v){const p=v.split(','),bin=atob(p[1]),u8=new Uint8Array(bin.length);for(let i=0;i<bin.length;i++)u8[i]=bin.charCodeAt(i);return new File([u8],'info.jpg',{type:'image/jpeg'})}
+/* tabs */
+document.querySelectorAll('.tabs button').forEach(b=>b.onclick=()=>{document.querySelectorAll('.tabs button').forEach(x=>x.classList.toggle('on',x===b));['send','team','hist'].forEach(t=>$('s-'+t).classList.toggle('on',t===b.dataset.t))});
+/* draft */
+$('txt').value=(()=>{try{return localStorage.getItem('pi_d')||''}catch(e){return ''}})();
+$('txt').addEventListener('input',()=>{cur=null;done={};try{localStorage.setItem('pi_d',$('txt').value)}catch(e){}});
+$('clr').onclick=()=>{if(($('txt').value||pend)&&!confirm('Vider le message en cours ? (l’historique est gardé)'))return;$('txt').value='';pend=null;cur=null;done={};$('prev').innerHTML='';$('wq').innerHTML='';try{localStorage.removeItem('pi_d')}catch(e){}};
+$('cam').onclick=()=>$('pic').click();
+$('pic').onchange=async ev=>{const fl=ev.target.files[0];ev.target.value='';if(!fl)return;try{pend=await shrink(fl);cur=null;$('prev').innerHTML='<img src="'+pend+'" alt="Photo jointe"><button class="alt sm" id="rm" type="button">Retirer</button>';$('rm').onclick=()=>{pend=null;cur=null;$('prev').innerHTML=''}}catch(e){toast('Photo illisible')}};
+/* team */
+const phone=p=>{p=String(p||'').replace(/\D/g,'');return p.length===8?'216'+p:p};
+function addC(n,p,e){n=(n||'').trim();if(!n)return false;C.push({id:Date.now()+''+Math.floor(Math.random()*1e4),n:n,p:phone(p),e:(e||'').trim()});return true}
+$('ca').onclick=()=>{if(!addC($('cn').value,$('cp').value,$('ce').value)){toast('Entre un nom');return}$('cn').value=$('cp').value=$('ce').value='';S();rc();toast('Ajouté')};
+$('bi').onclick=()=>{let n=0;$('bulk').value.split('\n').forEach(l=>{const a=l.split(/[,;\t]/);if(addC(a[0],a[1],a[2]))n++});$('bulk').value='';S();rc();toast(n+' personne(s) ajoutée(s)')};
+function rc(){
+ $('rcpt').innerHTML=C.length?C.map(c=>'<label class="rw"><input type="checkbox" data-i="'+c.id+'"'+(sel.has(c.id)?' checked':'')+'><span>'+esc(c.n)+'<br><small>'+esc([c.p&&'+'+c.p,c.e].filter(Boolean).join(' · '))+'</small></span></label>').join(''):'<div class="empty">Ajoute d’abord ton équipe dans l’onglet Équipe.</div>';
+ $('rcpt').querySelectorAll('input').forEach(i=>i.onchange=()=>{i.checked?sel.add(i.dataset.i):sel.delete(i.dataset.i);S()});
+ $('clist').innerHTML=C.length?'<div class="box">'+C.map(c=>'<div class="q"><span>'+esc(c.n)+'<br><small>'+esc([c.p&&'+'+c.p,c.e].filter(Boolean).join(' · ')||'sans contact')+'</small></span><button class="alt sm" data-d="'+c.id+'" type="button">Supprimer</button></div>').join('')+'</div>':'';
+ $('clist').querySelectorAll('[data-d]').forEach(b=>b.onclick=()=>{const c=C.find(x=>x.id===b.dataset.d);if(c&&confirm('Retirer '+c.n+' de l’équipe ?')){C=C.filter(x=>x!==c);sel.delete(c.id);S();rc()}});
+}
+$('all').onclick=()=>{const every=C.length&&C.every(c=>sel.has(c.id));C.forEach(c=>every?sel.delete(c.id):sel.add(c.id));S();rc()};
+/* sending */
+const chosen=()=>C.filter(c=>sel.has(c.id));
+const text=()=>$('txt').value.trim();
+function need(){if(!text()&&!pend){toast('Écris un message ou ajoute une photo');return false}if(!chosen().length){toast('Choisis au moins une personne');return false}return true}
+function log(ch){if(!cur){cur={id:Date.now()+'',t:new Date().toISOString(),m:text(),ch:[],n:chosen().map(c=>c.n),p:!!pend};H.push(cur);if(pend)putPic(cur.id,pend)}if(cur.ch.indexOf(ch)<0)cur.ch.push(ch);S();rh()}
+async function share(ch){
+ if(!need())return;
+ const d={text:text()};
+ if(pend){const fi=toFile(pend);if(navigator.canShare&&navigator.canShare({files:[fi]}))d.files=[fi];else{toast('Partage de photo non disponible ici');return}}
+ if(!navigator.share){try{await navigator.clipboard.writeText(text());toast('Texte copié : colle-le dans ton app')}catch(e){toast('Partage indisponible')}return}
+ try{await navigator.share(d);log(ch||'Partage')}catch(e){}
+}
+function viaShare(ch){if(pend){toast('Photo jointe : choisis l’app dans la liste');share(ch);return true}return false}
+$('bsh').onclick=()=>share('Partage');
+$('bwa').onclick=()=>{if(!need())return;if(viaShare('WhatsApp'))return;
+ const w=chosen().filter(c=>c.p);if(!w.length){toast('Aucun numéro');return}
+ $('wq').innerHTML=w.map(c=>'<div class="q"><span>'+esc(c.n)+'</span><b class="ok" id="k'+c.id+'">'+(done[c.id]?'✓':'')+'</b><button class="sm" data-w="'+c.id+'" type="button">WhatsApp</button></div>').join('');
+ $('wq').querySelectorAll('[data-w]').forEach(b=>b.onclick=()=>{const c=C.find(x=>x.id===b.dataset.w);done[c.id]=true;$('k'+c.id).textContent='✓';log('WhatsApp');window.open('https://wa.me/'+c.p+'?text='+encodeURIComponent(text()),'_blank')});
+};
+$('bsms').onclick=()=>{if(!need()||viaShare('SMS'))return;const n=chosen().filter(c=>c.p).map(c=>'+'+c.p);if(!n.length){toast('Aucun numéro');return}log('SMS');location.href='sms:/open?addresses='+n.join(',')+'&body='+encodeURIComponent(text())};
+$('bml').onclick=()=>{if(!need()||viaShare('Mail'))return;const m=chosen().filter(c=>c.e).map(c=>c.e);if(!m.length){toast('Aucun email');return}log('Mail');location.href='mailto:?bcc='+m.join(',')+'&subject='+encodeURIComponent(text().split('\n')[0].slice(0,60)||'Information')+'&body='+encodeURIComponent(text())};
+$('btm').onclick=()=>{if(!need()||viaShare('Teams'))return;const m=chosen().filter(c=>c.e).map(c=>c.e);if(!m.length){toast('Aucun email Teams');return}log('Teams');window.open('https://teams.microsoft.com/l/chat/0/0?users='+encodeURIComponent(m.join(','))+'&message='+encodeURIComponent(text()),'_blank')};
+/* history */
+function rh(){
+ if(!H.length){$('hlist').innerHTML='<div class="empty">Aucun envoi pour l’instant.</div>';return}
+ $('hlist').innerHTML='<div class="box">'+[...H].reverse().map(h=>'<div class="h"><small>'+new Date(h.t).toLocaleString('fr-FR',{weekday:'short',day:'numeric',month:'short',hour:'2-digit',minute:'2-digit'})+' · '+h.n.length+' personne(s)</small><p>'+esc(h.m||'(photo seule)')+'</p><div>'+h.ch.map(c=>'<span class="chip">'+esc(c)+'</span>').join('')+'</div><div class="btns" style="margin-top:8px">'+(h.p?'<button class="alt sm" data-v="'+h.id+'" type="button">📷 Photo</button>':'')+'<button class="alt sm" data-r="'+h.id+'" type="button">Réutiliser</button><button class="alt sm" data-x="'+h.id+'" type="button">Supprimer</button></div></div>').join('')+'</div>';
+ $('hlist').querySelectorAll('[data-v]').forEach(b=>b.onclick=()=>showPic(b.dataset.v));
+ $('hlist').querySelectorAll('[data-r]').forEach(b=>b.onclick=async()=>{const h=H.find(x=>x.id===b.dataset.r);$('txt').value=h.m;cur=null;done={};pend=h.p?await getPic(h.id):null;$('prev').innerHTML=pend?'<img src="'+pend+'" alt="Photo jointe">':'';try{localStorage.setItem('pi_d',h.m)}catch(e){}document.querySelector('[data-t=send]').click();toast('Message repris')});
+ $('hlist').querySelectorAll('[data-x]').forEach(b=>b.onclick=()=>{if(confirm('Supprimer cet envoi de l’historique ?')){delPic(b.dataset.x);H=H.filter(x=>x.id!==b.dataset.x);S();rh()}});
+}
+async function showPic(id){const v=await getPic(id);if(!v){toast('Photo introuvable');return}const o=document.createElement('div');o.className='ov';o.innerHTML='<img src="'+v+'" alt="Photo"><div class="btns"><button class="alt" id="pc" type="button">Fermer</button></div>';document.body.appendChild(o);$('pc').onclick=()=>o.remove()}
+/* backup */
+function dl(name,txt){const b=new Blob([txt],{type:'application/json'});const a=document.createElement('a');a.href=URL.createObjectURL(b);a.download=name;document.body.appendChild(a);a.click();a.remove();toast('Fichier prêt')}
+$('exJ').onclick=async()=>{const ph={};for(const h of H){if(h.p){const v=await getPic(h.id);if(v)ph[h.id]=v}}dl('pointinfo-sauvegarde.json',JSON.stringify({v:1,C:C,H:H,ph:ph}))};
+$('imp').onclick=()=>$('file').click();
+$('file').onchange=ev=>{const r=new FileReader();r.onload=()=>{try{const d=JSON.parse(r.result),ph=d.ph||{};const ci=new Set(C.map(c=>c.id)),hi=new Set(H.map(h=>h.id));(d.C||[]).forEach(c=>{if(c&&c.id&&!ci.has(c.id))C.push(c)});(d.H||[]).forEach(h=>{if(h&&h.id&&!hi.has(h.id)){H.push(h);if(h.p&&ph[h.id])putPic(h.id,ph[h.id])}});H.sort((a,b)=>a.t.localeCompare(b.t));S();rc();rh();toast('Restauré')}catch(e){toast('Fichier invalide')}};if(ev.target.files[0])r.readAsText(ev.target.files[0])};
+rc();rh();
+</script>
+</body>
+</html>
